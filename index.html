@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- tsParticles Library -->
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.7.0/tsparticles.bundle.min.js"></script>
+</head>
+
+<body class="relative bg-gradient-to-r from-blue-800 to-blue-500 min-h-screen flex items-center justify-center">
+    <!-- Particle Background -->
+    <div id="tsparticles" class="absolute inset-0 z-0"></div>
+
+    <!-- Weather App Container -->
+    <div class="weather-app relative bg-white bg-opacity-20 backdrop-blur-md p-8 rounded-lg shadow-lg text-center text-gray-800 w-full max-w-md z-10">
+        <header class="mb-6">
+            <input type="text" id="location-input" placeholder="Enter city..."
+                class="w-full p-4 rounded-lg bg-gray-100 text-gray-800 placeholder-gray-500 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4 transition ease-in-out duration-300">
+            <div class="flex justify-between">
+                <button id="search-btn"
+                    class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition ease-in-out duration-300 w-1/2 mr-2">
+                    Search
+                </button>
+                <button id="geo-btn"
+                    class="bg-blue-800 hover:bg-blue-900 text-white py-2 px-4 rounded-lg transition ease-in-out duration-300 w-1/2 ml-2">
+                    Use My Location
+                </button>
+            </div>
+        </header>
+
+        <section id="current-weather" class="mt-6">
+            <h2 id="city-name" class="text-3xl font-semibold mb-2">City Name</h2>
+            <p id="temperature" class="text-2xl mb-2">Temperature: --°C</p>
+            <p id="description" class="text-lg mb-4">Weather: --</p>
+            <img id="weather-icon" src="" alt="Weather Icon" class="mx-auto w-24 h-24">
+        </section>
+        <section id="forecast" class="mt-6">
+            <!-- Forecast cards go here -->
+        </section>
+    </div>
+
+    <!-- JavaScript Section -->
+    <script>
+        const apiKey = '16a6955ca250464c7208c3231dd3c1cb';
+
+        document.getElementById('search-btn').addEventListener('click', () => {
+            const city = document.getElementById('location-input').value;
+            if (city) {
+                getWeather(city);
+            } else {
+                alert('Please enter a city name.');
+            }
+        });
+
+        document.getElementById('geo-btn').addEventListener('click', () => {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(position => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    getWeatherByLocation(lat, lon);
+                });
+            } else {
+                alert('Geolocation is not supported by this browser.');
+            }
+        });
+
+        function getWeather(city) {
+            fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('City not found');
+                    }
+                    return response.json();
+                })
+                .then(data => updateWeatherUI(data))
+                .catch(error => console.error('Error fetching weather data:', error));
+        }
+
+        function getWeatherByLocation(lat, lon) {
+            fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${apiKey}`)
+                .then(response => response.json())
+                .then(data => updateWeatherUI(data))
+                .catch(error => console.error('Error fetching weather data:', error));
+        }
+
+        function updateWeatherUI(data) {
+            document.getElementById('city-name').textContent = data.name;
+            document.getElementById('temperature').textContent = `Temperature: ${data.main.temp}°C`;
+            document.getElementById('description').textContent = `Weather: ${data.weather[0].description}`;
+            document.getElementById('weather-icon').src = `https://openweathermap.org/img/wn/${data.weather[0].icon}.png`;
+        }
+
+        tsParticles.load("tsparticles", {
+            particles: {
+                number: {
+                    value: 60,
+                    density: {
+                        enable: true,
+                        value_area: 800
+                    }
+                },
+                color: {
+                    value: "#ffffff"
+                },
+                shape: {
+                    type: "circle",
+                    stroke: {
+                        width: 0,
+                        color: "#000000"
+                    }
+                },
+                opacity: {
+                    value: 0.6,
+                    random: false
+                },
+                size: {
+                    value: 4,
+                    random: true
+                },
+                line_linked: {
+                    enable: true,
+                    distance: 150,
+                    color: "#ffffff",
+                    opacity: 0.5,
+                    width: 1
+                },
+                move: {
+                    enable: true,
+                    speed: 4,
+                    direction: "none",
+                    random: false,
+                    straight: false,
+                    out_mode: "out",
+                    bounce: false
+                }
+            },
+            interactivity: {
+                detect_on: "canvas",
+                events: {
+                    onhover: {
+                        enable: true,
+                        mode: "bubble"
+                    },
+                    onclick: {
+                        enable: true,
+                        mode: "push"
+                    },
+                    resize: true
+                },
+                modes: {
+                    bubble: {
+                        distance: 250,
+                        size: 20,
+                        duration: 2,
+                        opacity: 0.8,
+                        speed: 3
+                    },
+                    push: {
+                        particles_nb: 4
+                    }
+                }
+            },
+            retina_detect: true
+        });
+    </script>
+</body>
+
+</html>
